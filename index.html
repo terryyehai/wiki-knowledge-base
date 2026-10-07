@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WIKI 知識庫 — https://terryyehai.github.io/wiki-knowledge-base</title>
+<style>
+:root {
+    --fg: #e6edf3;
+    --fg-muted: #8b949e;
+    --bg: #0d1117;
+    --bg-elevated: #161b22;
+    --bg-card: #21262d;
+    --accent: #58a6ff;
+    --accent-dim: #1f6feb;
+    --border: #30363d;
+    --radius: 12px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* ── Header ── */
+header {
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 2rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+}
+
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--fg);
+    letter-spacing: -0.02em;
+}
+
+.header-meta {
+    font-size: 0.85rem;
+    color: var(--fg-muted);
+}
+
+/* ── Search ── */
+.search-wrap {
+    position: relative;
+    max-width: 500px;
+    width: 100%;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 0.7rem 1rem 0.7rem 2.8rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--fg);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#searchInput:focus { border-color: var(--accent); }
+#searchInput::placeholder { color: var(--fg-muted); }
+
+.search-icon {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--fg-muted);
+    font-size: 1rem;
+}
+
+/* ── Filter bar ── */
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.9rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.filter-btn:hover, .filter-btn.active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+.filter-btn .count {
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 0 0.4rem;
+    font-size: 0.75rem;
+}
+
+/* ── Main content ── */
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+#resultCount {
+    font-size: 0.85rem;
+    color: var(--fg-muted);
+    margin-bottom: 1rem;
+}
+
+/* ── Grid ── */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.2rem;
+}
+
+@media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+    header { padding: 1.2rem; }
+    main { padding: 1rem; }
+}
+
+/* ── Card ── */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    transition: border-color 0.2s, transform 0.15s;
+}
+
+.card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.card.hidden { display: none; }
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--fg-muted);
+}
+
+.emoji { font-size: 1rem; }
+.category { font-weight: 600; color: var(--accent); }
+.date { margin-left: auto; }
+
+.card-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--fg);
+}
+
+.card-body {
+    font-size: 0.88rem;
+    color: var(--fg-muted);
+    line-height: 1.7;
+    max-height: 180px;
+    overflow: hidden;
+    position: relative;
+}
+
+.card-body::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(transparent, var(--bg-card));
+}
+
+.card-body h2, .card-body h3, .card-body h4 {
+    font-size: 0.95rem;
+    margin: 0.3rem 0;
+}
+.card-body p { margin: 0.3rem 0; }
+.card-body ul, .card-body ol { padding-left: 1.2rem; margin: 0.3rem 0; }
+.card-body pre { background: var(--bg); padding: 0.5rem; border-radius: 6px; overflow-x: auto; font-size: 0.8rem; }
+.card-body code { background: var(--bg); padding: 0.1rem 0.3rem; border-radius: 4px; font-size: 0.82rem; }
+.card-body pre code { background: none; padding: 0; }
+.card-body blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: 0.8rem;
+    color: var(--fg-muted);
+    font-style: italic;
+}
+.card-body a { color: var(--accent); text-decoration: none; }
+.card-body a:hover { text-decoration: underline; }
+.card-body table { border-collapse: collapse; width: 100%; font-size: 0.82rem; }
+.card-body td, .card-body th { border: 1px solid var(--border); padding: 0.3rem 0.5rem; text-align: left; }
+.card-body th { background: var(--bg); font-weight: 600; }
+
+.card-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.tag {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.72rem;
+    color: var(--fg-muted);
+}
+
+.source-link {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.source-link:hover { text-decoration: underline; }
+
+/* ── Empty state ── */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--fg-muted);
+}
+
+.empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+</style>
+</head>
+<body>
+<header>
+    <div class="header-inner">
+        <div class="header-top">
+            <h1>📚 WIKI 知識庫</h1>
+            <span class="header-meta">共 4 篇文章 &nbsp;·&nbsp; by Terry YEH</span>
+        </div>
+        <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="搜尋標題、內容、標籤…" autocomplete="off">
+        </div>
+        <div class="filter-bar" id="filterBar">
+            <button class="filter-btn active" data-filter="all">全部 <span class="count">4</span></button>
+            <button class="filter-btn" data-filter="3C">📱 3C <span class="count">3</span></button><button class="filter-btn" data-filter="AI">🤖 AI <span class="count">1</span></button><button class="filter-btn" data-filter="旅遊">✈️ 旅遊 <span class="count">0</span></button><button class="filter-btn" data-filter="興趣">🎯 興趣 <span class="count">0</span></button><button class="filter-btn" data-filter="教學">📚 教學 <span class="count">0</span></button><button class="filter-btn" data-filter="其他">📌 其他 <span class="count">0</span></button>
+        </div>
+    </div>
+</header>
+
+<main>
+    <p id="resultCount"></p>
+    <div class="grid" id="grid">
+        
+        <article class="card" data-category="AI" data-title="20261007_120000_AI_ChatGPT_Image_2_提示詞大全" data-tags="[ChatGPT, Image-2, prompt, AI圖像, 提示詞]">
+            <div class="card-header">
+                <span class="emoji">🤖</span>
+                <span class="category">AI</span>
+                <span class="date">2026-10-07</span>
+            </div>
+            <h3 class="card-title">20261007_120000_AI_ChatGPT_Image_2_提示詞大全</h3>
+            <div class="card-body">
+<h2>ChatGPT 指令大全！風景混搭手繪塗鴉、照片轉成馬賽克、把自己變身 Q 版扭蛋⋯150 組提示詞一次整理</h2>
+<strong>來源：</strong> 數位時代 / 天下雜誌群  
+<strong>發布時間：</strong> 2026-10-07  
+<strong>分類：</strong> AI  
+<hr>
+<h3>文章摘要</h3>
+本文整理 ChatGPT Image 2.0 五大圖像類型、150 組實用提示詞，涵蓋品牌社群、工作應用、生活實用、靈感創作與照片風格轉換，打造高質感圖像。
+五大類別：
+1. <strong>品牌社群類</strong> — Instagram 貼文、YouTube 縮圖、商品形象照、EDM行銷主圖、品牌吉祥物、活動海報、社群輪播圖、資訊圖、Logo概念圖、商業策略資訊圖
+2. <strong>工作應用類</strong> — 商業簡報封面、公司介紹圖卡、產品比較表、App Icon、操作流程圖解、數據資訊圖、Checklist、部落格首圖
+3. <strong>生活實用類</strong> — 旅遊行程規劃（釜山4天3夜為範例）、全家福Q版、公版素材
+4. <strong>靈感創作類</strong> — 風景混搭手繪塗鴉、夢幻氛圍風景、AI 梗圖生成
+5. <strong>照片風格轉換類</strong> — 旅遊手刻印章風、彩色麥克筆塗鴉風、報紙漫畫風、手繪建築素描、像素藝術、馬賽克磚、油畫、浮世繪、水彩、和紙膠帶風格、刺绣拼布風、旅遊雜誌風
+<hr>
+<h3>精選提示詞範例</h3>
+<h4>品牌形象｜ EDM 行銷主圖</h4>
+<blockquote>請幫我設計一張 EDM 主視覺，主題是會員限定優惠，畫面乾淨吸睛，適合品牌電子報使用。</blockquote>
+<h4>品牌形象｜ 活動海報設計</h4>
+<blockquote>請幫我製作一張科技論壇活動海報，使用黑金色調與現代字體，畫面具有高級感與專業感。</blockquote>
+<h4>生活實用｜ 釜山4天3夜旅遊行程（完整規劃）</h4>
+<blockquote>先完整規劃「釜山 4 天 3 夜自由行行程」，再將內容改寫成具畫面感的旅遊雜誌風格攻略文章，最後生成一張直式旅遊雜誌拼貼風海報。</blockquote>
+>
+<blockquote>【旅行設定】住宿：海雲台｜風格：海景＋美食＋咖啡廳＋散步療癒｜交通：地鐵+步行｜節奏：不要太趨</blockquote>
+>
+<blockquote><strong>Day 1｜海雲台海景慢旅行</strong>：海雲台市場、藍線公園 Sky Capsule、青沙浦燈塔、The Bay 101 夜景</blockquote>
+<blockquote><strong>Day 2｜老釜山文化與街頭美食</strong>：甘川文化村、白淺灘文化村、札嘎其市場、BIFF 廣場</blockquote>
+<blockquote><strong>Day 3｜廣安里與療癒放鬆日</strong>：廣安里海邊、松島海上纜車、Spa Land 汗蒸幕</blockquote>
+<blockquote><strong>Day 4｜咖啡街與回程散步</strong>：田浦咖啡街、西面地下街、Olive Young</blockquote>
+<h4>照片風格轉換｜ 彩色麥克筆塗鴉風</h4>
+<blockquote>Create a 50/50 top-and-bottom comparison image... Top half: Keep the original photo faithful and recognizable. Bottom half: Redraw the same scene as a naive editorial doodle using broad felt-tip and opaque paint markers...</blockquote>
+<h4>照片風格轉換｜ 清新紙感插畫貼紙風</h4>
+<blockquote>使用我上傳的照片作為唯一參考，將照片中的大樹、草地、兩位坐著的人物、野餐墊、包包、枝葉與落葉等元素，拆解並重新繪製成一組日系手帳插畫貼紙。</blockquote>
+<h4>照片風格轉換｜ 把照片變刺绣拼布</h4>
+<blockquote>[prompt包含多種negative constraints，避免過度精細重建邊緣、3D渲染、商業模板感]</blockquote>
+<hr>
+<h3>關鍵標籤</h3>
+<a href="https://www.bnext.com.tw/tags/ChatGPT" target="_blank">\#ChatGPT</a> <a href="https://www.bnext.com.tw/tags/%E6%8F%90%E7%A4%BA%E8%A9%9E%EF%BC%88prompt%EF%BC%89" target="_blank">\#提示詞（prompt）</a>
+<hr>
+<h3>原始連結</h3>
+https://www.bnext.com.tw/article/90908/chatgpt-image-2-prompt-guide-complete
+</div>
+            <div class="card-footer">
+                <span class="tag">ChatGPT</span><span class="tag">Image-2</span><span class="tag">prompt</span><span class="tag">AI圖像</span><span class="tag">提示詞</span>
+                <a class="source-link" href="https://www.bnext.com.tw/article/90908/chatgpt-image-2-prompt-guide-complete" target="_blank" tabindex="0">原始連結 ↗</a>
+            </div>
+        </article>
+        <article class="card" data-category="3C" data-title="20261007_113000_3C_iPhone_16_Pro_發表A18_Pro_晶片效能提升" data-tags="[url, article]">
+            <div class="card-header">
+                <span class="emoji">📱</span>
+                <span class="category">3C</span>
+                <span class="date">2026-10-07</span>
+            </div>
+            <h3 class="card-title">20261007_113000_3C_iPhone_16_Pro_發表A18_Pro_晶片效能提升</h3>
+            <div class="card-body">
+<h2>iPhone 16 Pro 發表，A18 Pro 晶片效能提升</h2>
+<h3>原始連結</h3>
+https://www.apple.com/newsroom/2025/09/apple-introduces-iphone-16-pro-and-iphone-16-pro-max/ (存檔時間: N/A)
+<h3>摘要</h3>
+iPhone 16 Pro 發表，A18 Pro 晶片效能提升
+</div>
+            <div class="card-footer">
+                <span class="tag">url</span><span class="tag">article</span>
+                <a class="source-link" href="https://www.apple.com/newsroom/2025/09/apple-introduces-iphone-16-pro-and-iphone-16-pro-max/" target="_blank" tabindex="0">原始連結 ↗</a>
+            </div>
+        </article>
+        <article class="card" data-category="3C" data-title="20261007_112528_3C_iPhone_16_Pro_Max_規格超強A18_Pro_" data-tags="">
+            <div class="card-header">
+                <span class="emoji">📱</span>
+                <span class="category">3C</span>
+                <span class="date">2026-10-07</span>
+            </div>
+            <h3 class="card-title">20261007_112528_3C_iPhone_16_Pro_Max_規格超強A18_Pro_</h3>
+            <div class="card-body">
+<h2>iPhone 16 Pro Max 規格超強，A18 Pro 晶片效能大提升，相機系統全面升級</h2>
+<h3>完整內容</h3>
+iPhone 16 Pro Max 規格超強，A18 Pro 晶片效能大提升，相機系統全面升級
+</div>
+            <div class="card-footer">
+                
+                <a class="source-link" href="" target="_blank" tabindex="0">原始連結 ↗</a>
+            </div>
+        </article>
+        <article class="card" data-category="3C" data-title="20261007_112415_3C_iPhone_16_Pro_Max_規格超強A18_Pro_" data-tags="">
+            <div class="card-header">
+                <span class="emoji">📱</span>
+                <span class="category">3C</span>
+                <span class="date">2026-10-07</span>
+            </div>
+            <h3 class="card-title">20261007_112415_3C_iPhone_16_Pro_Max_規格超強A18_Pro_</h3>
+            <div class="card-body">
+<h2>iPhone 16 Pro Max 規格超強，A18 Pro 晶片效能大提升，相機系統全面升級</h2>
+<h3>完整內容</h3>
+iPhone 16 Pro Max 規格超強，A18 Pro 晶片效能大提升，相機系統全面升級
+</div>
+            <div class="card-footer">
+                
+                <a class="source-link" href="" target="_blank" tabindex="0">原始連結 ↗</a>
+            </div>
+        </article>
+        <div class="empty-state" id="emptyState" style="display:none">
+            <div class="icon">🔍</div>
+            <p>找不到符合「<strong id="searchTerm"></strong>」的結果</p>
+        </div>
+    </div>
+</main>
+
+<script>
+const ARTICLES = [{"category": "AI", "emoji": "🤖", "filename": "20261007_120000_AI_ChatGPT_Image_2_提示詞大全.md", "title": "20261007_120000_AI_ChatGPT_Image_2_提示詞大全", "date": "2026-10-07 12:00:00", "url": "https://www.bnext.com.tw/article/90908/chatgpt-image-2-prompt-guide-complete", "tags": "[ChatGPT, Image-2, prompt, AI圖像, 提示詞]", "source": "telegram", "type": "url", "body": "\n<h2>ChatGPT 指令大全！風景混搭手繪塗鴉、照片轉成馬賽克、把自己變身 Q 版扭蛋⋯150 組提示詞一次整理</h2>\n<strong>來源：</strong> 數位時代 / 天下雜誌群  \n<strong>發布時間：</strong> 2026-10-07  \n<strong>分類：</strong> AI  \n<hr>\n<h3>文章摘要</h3>\n本文整理 ChatGPT Image 2.0 五大圖像類型、150 組實用提示詞，涵蓋品牌社群、工作應用、生活實用、靈感創作與照片風格轉換，打造高質感圖像。\n五大類別：\n1. <strong>品牌社群類</strong> — Instagram 貼文、YouTube 縮圖、商品形象照、EDM行銷主圖、品牌吉祥物、活動海報、社群輪播圖、資訊圖、Logo概念圖、商業策略資訊圖\n2. <strong>工作應用類</strong> — 商業簡報封面、公司介紹圖卡、產品比較表、App Icon、操作流程圖解、數據資訊圖、Checklist、部落格首圖\n3. <strong>生活實用類</strong> — 旅遊行程規劃（釜山4天3夜為範例）、全家福Q版、公版素材\n4. <strong>靈感創作類</strong> — 風景混搭手繪塗鴉、夢幻氛圍風景、AI 梗圖生成\n5. <strong>照片風格轉換類</strong> — 旅遊手刻印章風、彩色麥克筆塗鴉風、報紙漫畫風、手繪建築素描、像素藝術、馬賽克磚、油畫、浮世繪、水彩、和紙膠帶風格、刺绣拼布風、旅遊雜誌風\n<hr>\n<h3>精選提示詞範例</h3>\n<h4>品牌形象｜ EDM 行銷主圖</h4>\n<blockquote>請幫我設計一張 EDM 主視覺，主題是會員限定優惠，畫面乾淨吸睛，適合品牌電子報使用。</blockquote>\n<h4>品牌形象｜ 活動海報設計</h4>\n<blockquote>請幫我製作一張科技論壇活動海報，使用黑金色調與現代字體，畫面具有高級感與專業感。</blockquote>\n<h4>生活實用｜ 釜山4天3夜旅遊行程（完整規劃）</h4>\n<blockquote>先完整規劃「釜山 4 天 3 夜自由行行程」，再將內容改寫成具畫面感的旅遊雜誌風格攻略文章，最後生成一張直式旅遊雜誌拼貼風海報。</blockquote>\n>\n<blockquote>【旅行設定】住宿：海雲台｜風格：海景＋美食＋咖啡廳＋散步療癒｜交通：地鐵+步行｜節奏：不要太趨</blockquote>\n>\n<blockquote><strong>Day 1｜海雲台海景慢旅行</strong>：海雲台市場、藍線公園 Sky Capsule、青沙浦燈塔、The Bay 101 夜景</blockquote>\n<blockquote><strong>Day 2｜老釜山文化與街頭美食</strong>：甘川文化村、白淺灘文化村、札嘎其市場、BIFF 廣場</blockquote>\n<blockquote><strong>Day 3｜廣安里與療癒放鬆日</strong>：廣安里海邊、松島海上纜車、Spa Land 汗蒸幕</blockquote>\n<blockquote><strong>Day 4｜咖啡街與回程散步</strong>：田浦咖啡街、西面地下街、Olive Young</blockquote>\n<h4>照片風格轉換｜ 彩色麥克筆塗鴉風</h4>\n<blockquote>Create a 50/50 top-and-bottom comparison image... Top half: Keep the original photo faithful and recognizable. Bottom half: Redraw the same scene as a naive editorial doodle using broad felt-tip and opaque paint markers...</blockquote>\n<h4>照片風格轉換｜ 清新紙感插畫貼紙風</h4>\n<blockquote>使用我上傳的照片作為唯一參考，將照片中的大樹、草地、兩位坐著的人物、野餐墊、包包、枝葉與落葉等元素，拆解並重新繪製成一組日系手帳插畫貼紙。</blockquote>\n<h4>照片風格轉換｜ 把照片變刺绣拼布</h4>\n<blockquote>[prompt包含多種negative constraints，避免過度精細重建邊緣、3D渲染、商業模板感]</blockquote>\n<hr>\n<h3>關鍵標籤</h3>\n<a href=\"https://www.bnext.com.tw/tags/ChatGPT\" target=\"_blank\">\\#ChatGPT</a> <a href=\"https://www.bnext.com.tw/tags/%E6%8F%90%E7%A4%BA%E8%A9%9E%EF%BC%88prompt%EF%BC%89\" target=\"_blank\">\\#提示詞（prompt）</a>\n<hr>\n<h3>原始連結</h3>\nhttps://www.bnext.com.tw/article/90908/chatgpt-image-2-prompt-guide-complete\n", "path": "AI/20261007_120000_AI_ChatGPT_Image_2_提示詞大全.md"}, {"category": "3C", "emoji": "📱", "filename": "20261007_113000_3C_iPhone_16_Pro_發表A18_Pro_晶片效能提升.md", "title": "20261007_113000_3C_iPhone_16_Pro_發表A18_Pro_晶片效能提升", "date": "2026-10-07 11:30:00", "url": "https://www.apple.com/newsroom/2025/09/apple-introduces-iphone-16-pro-and-iphone-16-pro-max/", "tags": "[url, article]", "source": "telegram", "type": "url", "body": "\n<h2>iPhone 16 Pro 發表，A18 Pro 晶片效能提升</h2>\n<h3>原始連結</h3>\nhttps://www.apple.com/newsroom/2025/09/apple-introduces-iphone-16-pro-and-iphone-16-pro-max/ (存檔時間: N/A)\n<h3>摘要</h3>\niPhone 16 Pro 發表，A18 Pro 晶片效能提升\n", "path": "3C/20261007_113000_3C_iPhone_16_Pro_發表A18_Pro_晶片效能提升.md"}, {"category": "3C", "emoji": "📱", "filename": "20261007_112528_3C_iPhone_16_Pro_Max_規格超強A18_Pro_.md", "title": "20261007_112528_3C_iPhone_16_Pro_Max_規格超強A18_Pro_", "date": "2026-10-07 11:25:28", "url": "", "tags": "", "source": "telegram", "type": "text", "body": "\n<h2>iPhone 16 Pro Max 規格超強，A18 Pro 晶片效能大提升，相機系統全面升級</h2>\n<h3>完整內容</h3>\niPhone 16 Pro Max 規格超強，A18 Pro 晶片效能大提升，相機系統全面升級\n", "path": "3C/20261007_112528_3C_iPhone_16_Pro_Max_規格超強A18_Pro_.md"}, {"category": "3C", "emoji": "📱", "filename": "20261007_112415_3C_iPhone_16_Pro_Max_規格超強A18_Pro_.md", "title": "20261007_112415_3C_iPhone_16_Pro_Max_規格超強A18_Pro_", "date": "2026-10-07 11:24:15", "url": "", "tags": "", "source": "telegram", "type": "text", "body": "\n<h2>iPhone 16 Pro Max 規格超強，A18 Pro 晶片效能大提升，相機系統全面升級</h2>\n<h3>完整內容</h3>\niPhone 16 Pro Max 規格超強，A18 Pro 晶片效能大提升，相機系統全面升級\n", "path": "3C/20261007_112415_3C_iPhone_16_Pro_Max_規格超強A18_Pro_.md"}];
+const grid = document.getElementById('grid');
+const cards = document.querySelectorAll('.card');
+const searchInput = document.getElementById('searchInput');
+const filterBtns = document.querySelectorAll('.filter-btn');
+const resultCount = document.getElementById('resultCount');
+const emptyState = document.getElementById('emptyState');
+const searchTerm = document.getElementById('searchTerm');
+
+let currentFilter = 'all';
+let currentSearch = '';
+
+function applyFilters() {
+    let visible = 0;
+    const q = currentSearch.toLowerCase();
+
+    cards.forEach(card => {
+        const cat = card.dataset.category;
+        const title = card.dataset.title.toLowerCase();
+        const tags = card.dataset.tags.toLowerCase();
+        const bodyText = card.querySelector('.card-body').innerText.toLowerCase();
+
+        const matchCat = currentFilter === 'all' || cat === currentFilter;
+        const matchSearch = !q || title.includes(q) || tags.includes(q) || bodyText.includes(q);
+
+        if (matchCat && matchSearch) {
+            card.classList.remove('hidden');
+            visible++;
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+
+    resultCount.textContent = currentSearch
+        ? `找到 ${visible} / ${ARTICLES.length} 篇`
+        : '';
+    emptyState.style.display = visible === 0 ? 'block' : 'none';
+    if (q) searchTerm.textContent = q;
+}
+
+// Search
+searchInput.addEventListener('input', () => {
+    currentSearch = searchInput.value.trim();
+    applyFilters();
+});
+
+// Filter buttons
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        applyFilters();
+    });
+});
+
+// Expand card on click
+cards.forEach(card => {
+    card.addEventListener('click', () => {
+        const body = card.querySelector('.card-body');
+        const isExpanded = body.style.maxHeight && body.style.maxHeight !== '180px';
+        if (isExpanded) {
+            body.style.maxHeight = '180px';
+            body.style.overflow = 'hidden';
+        } else {
+            body.style.maxHeight = 'none';
+            body.style.overflow = 'visible';
+            body.style.position = 'relative';
+        }
+    });
+});
+
+applyFilters();
+</script>
+</body>
+</html>
